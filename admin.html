@@ -1,58 +1,42 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Loryez - Admin</title>
+    <title>Admin Cronograma</title>
     <style>
-        body { background: #050505; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .card { background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333; width: 100%; max-width: 400px; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
-        button { background: #8257e5; border: none; font-weight: bold; cursor: pointer; }
+        body { background: #0a0a0a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 40px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #9d4edd; border: none; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Painel Admin</h2>
-        <input type="password" id="senha" placeholder="Senha Mestra">
-        <hr>
-        <input type="text" id="nome" placeholder="Nome do Filme">
-        <input type="text" id="tmdb_id" placeholder="ID TMDB">
+    <div style="width: 300px;">
+        <h2>Adicionar ao Cronograma</h2>
+        <input type="password" id="senha" placeholder="Senha Admin">
+        <input type="text" id="nome" placeholder="Nome do Conteúdo">
+        <input type="text" id="tmdb_id" placeholder="ID do TMDB">
         <input type="text" id="patrocinador" placeholder="Patrocinador">
-        <select id="tipo">
-            <option value="patrocinado">Patrocinado</option>
-            <option value="assistido">Já Assistido</option>
-        </select>
-        <button onclick="salvar()">Salvar no Banco</button>
-        <p id="msg"></p>
+        <input type="text" id="episodios" placeholder="Ex: EP 01 ao 03">
+        <button onclick="enviar()">Adicionar</button>
     </div>
 
     <script>
-        async function salvar() {
-            const msg = document.getElementById('msg');
-            msg.innerText = "Enviando...";
-            
-            const payload = {
+        async function enviar() {
+            const data = {
+                senha: document.getElementById('senha').value,
                 nome: document.getElementById('nome').value,
                 tmdb_id: document.getElementById('tmdb_id').value,
                 patrocinador: document.getElementById('patrocinador').value,
-                tipo: document.getElementById('tipo').value
+                episodios: document.getElementById('episodios').value
             };
 
             const res = await fetch('/api/db', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'x-admin-senha': document.getElementById('senha').value
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
 
-            if (res.ok) {
-                msg.innerText = "✅ Salvo com sucesso!";
-                document.querySelectorAll('input').forEach(i => i.id !== 'senha' && (i.value = ''));
-            } else {
-                msg.innerText = "❌ Erro: Senha incorreta ou problema no banco.";
-            }
+            if (res.ok) alert("Adicionado!");
+            else alert("Erro ao salvar!");
         }
     </script>
 </body>
