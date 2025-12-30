@@ -2028,7 +2028,269 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // --- INTEGRAÇÃO COM SUPABASE ---
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+        // Configuração com as suas chaves
+        const supabaseUrl = 'https://dujadedlsugesyiaktno.supabase.co';
+        const supabaseKey = 'sb_publishable_bB6AaiZDIQ3BZQVWAEz_NA_J5XrLxB6';
+        const _supabase = createClient(supabaseUrl, supabaseKey);
+
+        async function carregarDadosDoSupabase() {
+            console.log("Iniciando busca de dados...");
+            
+            const { data, error } = await _supabase
+                .from('conteudos')
+                .select('*');
+
+            if (error) {
+                console.error("Erro ao carregar dados:", error.message);
+                return;
+            }
+
+            if (data) {
+                console.log("Dados recebidos:", data);
+
+                // Filtra os dados conforme o tipo que você salvar no Admin
+                const patrocinados = data.filter(item => item.tipo === 'patrocinado');
+                const assistidos = data.filter(item => item.tipo === 'assistido');
+
+                // Chama as funções para renderizar os conteúdos
+                renderSupabasePatrocinados(patrocinados);
+                renderSupabaseAssistidos(assistidos);
+            }
+        }
+
+        // Função para renderizar conteúdos patrocinados do Supabase
+        function renderSupabasePatrocinados(patrocinados) {
+            const containers = {
+                filmes: document.getElementById('filmes-grid'),
+                series: document.getElementById('series-grid'),
+                animes: document.getElementById('animes-grid')
+            };
+
+            const sections = {
+                filmes: document.getElementById('filmes-section'),
+                series: document.getElementById('series-section'),
+                animes: document.getElementById('animes-section')
+            };
+
+            // Limpa os containers
+            containers.filmes.innerHTML = '';
+            containers.series.innerHTML = '';
+            containers.animes.innerHTML = '';
+
+            // Oculta a mensagem de carregamento
+            document.getElementById('loading-message').classList.add('hidden');
+
+            patrocinados.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.dataset.id = item.id_tmdb;
+                
+                // Usa a imagem do Supabase se disponível, senão usa placeholder
+                const posterPath = item.poster_url || `https://image.tmdb.org/t/p/w500${item.poster_path}` || 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+                
+                card.innerHTML = `
+                    <img src="${posterPath}" alt="Pôster de ${item.titulo}">
+                    <div class="media-card-title">${item.titulo}</div>
+                `;
+
+                // Determina o tipo (filme, série ou anime)
+                let typeKey;
+                if (item.tipo_conteudo === 'movie' || !item.tipo_conteudo) {
+                    typeKey = 'filmes';
+                    sections.filmes.classList.remove('hidden');
+                    containers.filmes.appendChild(card);
+                } else if (item.tipo_conteudo === 'tv') {
+                    // Verifica se é anime pelos gêneros
+                    if (item.generos && (item.generos.includes('Animation') || item.generos.includes('Anime'))) {
+                        typeKey = 'animes';
+                        sections.animes.classList.remove('hidden');
+                        containers.animes.appendChild(card);
+                    } else {
+                        typeKey = 'series';
+                        sections.series.classList.remove('hidden');
+                        containers.series.appendChild(card);
+                    }
+                }
+                
+                card.dataset.type = typeKey;
+
+                // Adiciona evento de clique para abrir modal com detalhes do Supabase
+                card.addEventListener('click', () => showSupabaseDetailsModal(item, 'patrocinado'));
+            });
+
+            // Aplica o filtro atual após carregar
+            applySponsoredFilter();
+        }
+
+        // Função para renderizar conteúdos assistidos do Supabase
+        function renderSupabaseAssistidos(assistidos) {
+            const containers = {
+                filmes: document.getElementById('assistidos-filmes-grid'),
+                series: document.getElementById('assistidos-series-grid'),
+                animes: document.getElementById('assistidos-animes-grid')
+            };
+
+            const sections = {
+                filmes: document.getElementById('assistidos-filmes-section'),
+                series: document.getElementById('assistidos-series-section'),
+                animes: document.getElementById('assistidos-animes-section')
+            };
+
+            // Limpa os containers
+            containers.filmes.innerHTML = '';
+            containers.series.innerHTML = '';
+            containers.animes.innerHTML = '';
+
+            // Oculta a mensagem de carregamento
+            document.getElementById('assistidos-loading-message').classList.add('hidden');
+
+            assistidos.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.dataset.id = item.id_tmdb;
+                
+                // Usa a imagem do Supabase se disponível, senão usa placeholder
+                const posterPath = item.poster_url || `https://image.tmdb.org/t/p/w500${item.poster_path}` || 'https://via.placeholder.com/200x300?text=Sem+Imagem';
+                
+                card.innerHTML = `
+                    <img src="${posterPath}" alt="Pôster de ${item.titulo}">
+                    <div class="media-card-title">${item.titulo}</div>
+                `;
+
+                // Determina o tipo (filme, série ou anime)
+                let typeKey;
+                if (item.tipo_conteudo === 'movie' || !item.tipo_conteudo) {
+                    typeKey = 'filmes';
+                    sections.filmes.classList.remove('hidden');
+                    containers.filmes.appendChild(card);
+                } else if (item.tipo_conteudo === 'tv') {
+                    // Verifica se é anime pelos gêneros
+                    if (item.generos && (item.generos.includes('Animation') || item.generos.includes('Anime'))) {
+                        typeKey = 'animes';
+                        sections.animes.classList.remove('hidden');
+                        containers.animes.appendChild(card);
+                    } else {
+                        typeKey = 'series';
+                        sections.series.classList.remove('hidden');
+                        containers.series.appendChild(card);
+                    }
+                }
+                
+                card.dataset.type = typeKey;
+
+                // Adiciona evento de clique para abrir modal com detalhes do Supabase
+                card.addEventListener('click', () => showSupabaseDetailsModal(item, 'assistido'));
+            });
+
+            // Aplica o filtro atual após carregar
+            applyAssistidosFilter();
+        }
+
+        // Função para mostrar modal com detalhes do Supabase
+        function showSupabaseDetailsModal(item, tipo) {
+            const modal = tipo === 'patrocinado' ? 
+                document.getElementById('details-modal') : 
+                document.getElementById('assistidos-details-modal');
+            
+            const backdropBg = modal.querySelector('.modal-backdrop-bg');
+            if (item.backdrop_url) {
+                backdropBg.style.backgroundImage = `url('${item.backdrop_url}')`;
+            } else if (item.backdrop_path) {
+                backdropBg.style.backgroundImage = `url('https://image.tmdb.org/t/p/original${item.backdrop_path}')`;
+            }
+
+            // Configura os elementos do modal baseado no tipo
+            if (tipo === 'patrocinado') {
+                document.getElementById('modal-poster').src = item.poster_url || 
+                    `https://image.tmdb.org/t/p/w500${item.poster_path}` || 
+                    'https://via.placeholder.com/200x300?text=Sem+Imagem';
+                document.getElementById('modal-title').textContent = item.titulo;
+                document.getElementById('modal-synopsis').textContent = item.sinopse || 'Sinopse não disponível.';
+                
+                // Configura informações específicas
+                populateInfoTags('modal-sponsored-eps', item.episodios_patrocinados || 'N/A');
+                populateInfoTags('modal-watched-eps', item.episodios_assistidos || 'N/A');
+                populateInfoTags('modal-total-eps', item.episodios_totais || 'N/A');
+                populateInfoTags('modal-sponsor', item.patrocinador || 'N/A');
+                
+                // Configura metadados
+                const metaContainer = document.getElementById('modal-meta');
+                if (item.tipo_conteudo === 'movie') {
+                    metaContainer.innerHTML = `
+                        <span>Filme</span>
+                        <span>${item.ano || 'N/A'}</span>
+                        <span>${formatDuration(item.duracao)}</span>
+                    `;
+                } else {
+                    metaContainer.innerHTML = `
+                        <span>${item.generos && item.generos.includes('Animation') ? 'Anime' : 'Série'}</span>
+                        <span>${item.ano || 'N/A'}</span>
+                    `;
+                }
+                
+                // Mostra/oculta seções baseado no tipo
+                document.getElementById('modal-info-tv').classList.toggle('hidden', item.tipo_conteudo === 'movie');
+                document.getElementById('modal-genres-container').classList.toggle('hidden', !item.generos);
+                
+                // Configura gêneros
+                if (item.generos) {
+                    const genresContainer = document.getElementById('modal-genres');
+                    genresContainer.innerHTML = item.generos.split(',').slice(0, 3)
+                        .map(g => `<span>${g.trim()}</span>`).join('');
+                }
+            } else {
+                // Modal para assistidos
+                document.getElementById('assistidos-modal-poster').src = item.poster_url || 
+                    `https://image.tmdb.org/t/p/w500${item.poster_path}` || 
+                    'https://via.placeholder.com/200x300?text=Sem+Imagem';
+                document.getElementById('assistidos-modal-title').textContent = item.titulo;
+                document.getElementById('assistidos-modal-synopsis').textContent = item.sinopse || 'Sinopse não disponível.';
+                
+                // Configura avaliação
+                document.getElementById('assistidos-modal-rating').innerHTML = renderStars(item.nota);
+                
+                // Configura informações específicas
+                populateInfoTags('assistidos-modal-sponsored-eps', item.episodios_patrocinados || 'N/A');
+                populateInfoTags('assistidos-modal-watched-eps', item.episodios_assistidos || 'N/A');
+                populateInfoTags('assistidos-modal-sponsor', item.patrocinador || 'N/A');
+                
+                // Configura metadados
+                const metaContainer = document.getElementById('assistidos-modal-meta');
+                if (item.tipo_conteudo === 'movie') {
+                    metaContainer.innerHTML = `
+                        <span>Filme</span>
+                        <span>${item.ano || 'N/A'}</span>
+                        <span>${formatDuration(item.duracao)}</span>
+                    `;
+                } else {
+                    metaContainer.innerHTML = `
+                        <span>${item.generos && item.generos.includes('Animation') ? 'Anime' : 'Série'}</span>
+                        <span>${item.ano || 'N/A'}</span>
+                    `;
+                }
+                
+                // Mostra/oculta seções baseado no tipo
+                document.getElementById('assistidos-modal-info-tv').classList.toggle('hidden', item.tipo_conteudo === 'movie');
+                document.getElementById('assistidos-modal-genres-container').classList.toggle('hidden', !item.generos);
+                
+                // Configura gêneros
+                if (item.generos) {
+                    const genresContainer = document.getElementById('assistidos-modal-genres');
+                    genresContainer.innerHTML = item.generos.split(',').slice(0, 3)
+                        .map(g => `<span>${g.trim()}</span>`).join('');
+                }
+            }
+            
+            modal.classList.add('visible');
+        }
+
+        // Executa assim que a página carregar
+        document.addEventListener('DOMContentLoaded', carregarDadosDoSupabase);
+
         // --- SCRIPT DA ABA PATROCINAR ---
         const API_KEY = 'ae110c8706fa5b6ed0a58125648e31b3';
         const BASE_URL = 'https://api.themoviedb.org/3';
@@ -2138,14 +2400,151 @@
             
             // CARREGAR TUDO AUTOMATICAMENTE AO INICIAR
             fetchNudezIds();
-            loadSponsoredContent();
-            loadAssistidosContent();
+            // loadSponsoredContent(); // REMOVIDO - Agora usa Supabase
+            // loadAssistidosContent(); // REMOVIDO - Agora usa Supabase
             
             // Sistema de abas
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => { 
                     e.preventDefault(); 
                     switchTab(link.dataset.tab); 
+                });
+            });
+
+            // Inicializa filtros
+            initFilters();
+        }
+
+        function initFilters() {
+            // CORREÇÃO: Lógica de busca e filtro para a aba Assistidos
+            const assistidosSearchInput = document.getElementById('assistidos-search-input');
+            const assistidosFilterToggleBtn = document.getElementById('assistidos-filter-toggle-btn');
+            const assistidosFilterDropdown = document.getElementById('assistidos-filter-dropdown');
+            const assistidosFilterOptions = document.querySelectorAll('#assistidos-filter-dropdown .filter-option');
+            let currentAssistidosFilter = 'all';
+
+            function applyAssistidosFilter() {
+                const query = assistidosSearchInput.value.toLowerCase().trim();
+                
+                document.querySelectorAll('#assistidos-tab .media-card').forEach(card => {
+                    const title = card.querySelector('.media-card-title').textContent.toLowerCase();
+                    const type = card.dataset.type;
+
+                    const matchesQuery = title.includes(query);
+                    const matchesFilter = (currentAssistidosFilter === 'all' || currentAssistidosFilter === type);
+                    
+                    card.style.display = (matchesQuery && matchesFilter) ? 'block' : 'none';
+                });
+
+                const sections = {
+                    filmes: document.getElementById('assistidos-filmes-section'),
+                    series: document.getElementById('assistidos-series-section'),
+                    animes: document.getElementById('assistidos-animes-section')
+                };
+
+                Object.entries(sections).forEach(([key, section]) => {
+                    if (currentAssistidosFilter === 'all' || currentAssistidosFilter === key) {
+                        const hasVisibleCards = Array.from(section.querySelectorAll('.media-card'))
+                            .some(card => card.style.display !== 'none');
+                        section.classList.toggle('hidden', !hasVisibleCards);
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            }
+
+            assistidosSearchInput.addEventListener('input', applyAssistidosFilter);
+
+            assistidosFilterToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                assistidosFilterDropdown.classList.toggle('hidden');
+                assistidosFilterToggleBtn.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', () => {
+                assistidosFilterDropdown.classList.add('hidden');
+                assistidosFilterToggleBtn.classList.remove('active');
+            });
+
+            assistidosFilterOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    assistidosFilterOptions.forEach(opt => opt.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    
+                    currentAssistidosFilter = e.currentTarget.dataset.filter;
+                    assistidosFilterDropdown.classList.add('hidden');
+                    assistidosFilterToggleBtn.classList.remove('active');
+                    
+                    applyAssistidosFilter();
+                });
+            });
+
+            // CORREÇÃO: Lógica de busca e filtro para a aba Patrocinados
+            const sponsoredSearchInput = document.getElementById('sponsored-search-input');
+            const filterToggleBtn = document.getElementById('filter-toggle-btn');
+            const filterDropdown = document.getElementById('filter-dropdown');
+            const filterOptions = document.querySelectorAll('#filter-dropdown .filter-option');
+            let currentFilter = 'all';
+
+            function applySponsoredFilter() {
+                const query = sponsoredSearchInput.value.toLowerCase().trim();
+                
+                document.querySelectorAll('#patrocinados-tab .media-card').forEach(card => {
+                    const title = card.querySelector('.media-card-title').textContent.toLowerCase();
+                    const type = card.dataset.type;
+
+                    const matchesQuery = title.includes(query);
+                    const matchesFilter = (currentFilter === 'all' || currentFilter === type);
+                    
+                    card.style.display = (matchesQuery && matchesFilter) ? 'block' : 'none';
+                });
+
+                const sections = {
+                    filmes: document.getElementById('filmes-section'),
+                    series: document.getElementById('series-section'),
+                    animes: document.getElementById('animes-section')
+                };
+
+                Object.entries(sections).forEach(([key, section]) => {
+                    if (currentFilter === 'all' || currentFilter === key) {
+                        const hasVisibleCards = Array.from(section.querySelectorAll('.media-card'))
+                            .some(card => card.style.display !== 'none');
+                        section.classList.toggle('hidden', !hasVisibleCards);
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            }
+
+            sponsoredSearchInput.addEventListener('input', applySponsoredFilter);
+
+            filterToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                filterDropdown.classList.toggle('hidden');
+                filterToggleBtn.classList.toggle('active');
+            });
+            
+            document.addEventListener('click', () => {
+                filterDropdown.classList.add('hidden');
+                filterToggleBtn.classList.remove('active');
+            });
+
+            filterOptions.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    filterOptions.forEach(opt => opt.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    
+                    currentFilter = e.currentTarget.dataset.filter;
+                    filterDropdown.classList.add('hidden');
+                    filterToggleBtn.classList.remove('active');
+                    
+                    applySponsoredFilter();
                 });
             });
         }
@@ -3306,143 +3705,7 @@
             };
         }
 
-        // --- SCRIPT DAS ABAS E FILTROS ---
-        (function() {
-            // CORREÇÃO: Lógica de busca e filtro para a aba Assistidos
-            const assistidosSearchInput = document.getElementById('assistidos-search-input');
-            const assistidosFilterToggleBtn = document.getElementById('assistidos-filter-toggle-btn');
-            const assistidosFilterDropdown = document.getElementById('assistidos-filter-dropdown');
-            const assistidosFilterOptions = document.querySelectorAll('#assistidos-filter-dropdown .filter-option');
-            let currentAssistidosFilter = 'all';
-
-            function applyAssistidosFilter() {
-                const query = assistidosSearchInput.value.toLowerCase().trim();
-                
-                document.querySelectorAll('#assistidos-tab .media-card').forEach(card => {
-                    const title = card.querySelector('.media-card-title').textContent.toLowerCase();
-                    const type = card.dataset.type;
-
-                    const matchesQuery = title.includes(query);
-                    const matchesFilter = (currentAssistidosFilter === 'all' || currentAssistidosFilter === type);
-                    
-                    card.style.display = (matchesQuery && matchesFilter) ? 'block' : 'none';
-                });
-
-                const sections = {
-                    filmes: document.getElementById('assistidos-filmes-section'),
-                    series: document.getElementById('assistidos-series-section'),
-                    animes: document.getElementById('assistidos-animes-section')
-                };
-
-                Object.entries(sections).forEach(([key, section]) => {
-                    if (currentAssistidosFilter === 'all' || currentAssistidosFilter === key) {
-                        const hasVisibleCards = Array.from(section.querySelectorAll('.media-card'))
-                            .some(card => card.style.display !== 'none');
-                        section.classList.toggle('hidden', !hasVisibleCards);
-                    } else {
-                        section.classList.add('hidden');
-                    }
-                });
-            }
-
-            assistidosSearchInput.addEventListener('input', applyAssistidosFilter);
-
-            assistidosFilterToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                assistidosFilterDropdown.classList.toggle('hidden');
-                assistidosFilterToggleBtn.classList.toggle('active');
-            });
-            
-            document.addEventListener('click', () => {
-                assistidosFilterDropdown.classList.add('hidden');
-                assistidosFilterToggleBtn.classList.remove('active');
-            });
-
-            assistidosFilterOptions.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    assistidosFilterOptions.forEach(opt => opt.classList.remove('active'));
-                    e.currentTarget.classList.add('active');
-                    
-                    currentAssistidosFilter = e.currentTarget.dataset.filter;
-                    assistidosFilterDropdown.classList.add('hidden');
-                    assistidosFilterToggleBtn.classList.remove('active');
-                    
-                    applyAssistidosFilter();
-                });
-            });
-
-            // CORREÇÃO: Lógica de busca e filtro para a aba Patrocinados
-            const sponsoredSearchInput = document.getElementById('sponsored-search-input');
-            const filterToggleBtn = document.getElementById('filter-toggle-btn');
-            const filterDropdown = document.getElementById('filter-dropdown');
-            const filterOptions = document.querySelectorAll('#filter-dropdown .filter-option');
-            let currentFilter = 'all';
-
-            function applySponsoredFilter() {
-                const query = sponsoredSearchInput.value.toLowerCase().trim();
-                
-                document.querySelectorAll('#patrocinados-tab .media-card').forEach(card => {
-                    const title = card.querySelector('.media-card-title').textContent.toLowerCase();
-                    const type = card.dataset.type;
-
-                    const matchesQuery = title.includes(query);
-                    const matchesFilter = (currentFilter === 'all' || currentFilter === type);
-                    
-                    card.style.display = (matchesQuery && matchesFilter) ? 'block' : 'none';
-                });
-
-                const sections = {
-                    filmes: document.getElementById('filmes-section'),
-                    series: document.getElementById('series-section'),
-                    animes: document.getElementById('animes-section')
-                };
-
-                Object.entries(sections).forEach(([key, section]) => {
-                    if (currentFilter === 'all' || currentFilter === key) {
-                        const hasVisibleCards = Array.from(section.querySelectorAll('.media-card'))
-                            .some(card => card.style.display !== 'none');
-                        section.classList.toggle('hidden', !hasVisibleCards);
-                    } else {
-                        section.classList.add('hidden');
-                    }
-                });
-            }
-
-            sponsoredSearchInput.addEventListener('input', applySponsoredFilter);
-
-            filterToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                filterDropdown.classList.toggle('hidden');
-                filterToggleBtn.classList.toggle('active');
-            });
-            
-            document.addEventListener('click', () => {
-                filterDropdown.classList.add('hidden');
-                filterToggleBtn.classList.remove('active');
-            });
-
-            filterOptions.forEach(option => {
-                option.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    filterOptions.forEach(opt => opt.classList.remove('active'));
-                    e.currentTarget.classList.add('active');
-                    
-                    currentFilter = e.currentTarget.dataset.filter;
-                    filterDropdown.classList.add('hidden');
-                    filterToggleBtn.classList.remove('active');
-                    
-                    applySponsoredFilter();
-                });
-            });
-
-        })();
-
-        // --- SCRIPT PARA CARREGAR CONTEÚDOS PATROCINADOS E ASSISTIDOS ---
+        // --- FUNÇÕES AUXILIARES DO SUPABASE ---
         
         // FUNÇÃO DE RENDERIZAR ERRO COM BOTÃO
         function renderErrorButton(containerId, retryFunction) {
@@ -3527,324 +3790,6 @@
                 tag.textContent = 'N/A';
                 container.appendChild(tag);
             }
-        }
-
-        // Carrega e processa os dados da planilha e do TMDB para PATROCINADOS
-        async function loadSponsoredContent() {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-                const response = await fetch(SPONSORED_DATA_URL, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) throw new Error('Falha ao buscar dados do Google Script.');
-                const sponsoredItems = await response.json();
-                
-                const detailedItems = await Promise.all(
-                    sponsoredItems.map(async (item) => {
-                        const tmdbId = item['ID DO TMDB'];
-                        if (!tmdbId) return null;
-
-                        const isMovie = !item['Episódios Patrocinados'] && !item['Episódios Assistidos'];
-                        const mediaType = isMovie ? 'movie' : 'tv';
-                        
-                        const tmdbUrl = `${TMDB_BASE_URL}/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
-                        
-                        try {
-                            const tmdbResponse = await fetch(tmdbUrl);
-                            if (!tmdbResponse.ok) return null;
-                            const tmdbData = await tmdbResponse.json();
-                            return { ...item, ...tmdbData, media_type_custom: mediaType };
-                        } catch (e) {
-                            return null;
-                        }
-                    })
-                );
-                
-                document.getElementById('loading-message').classList.add('hidden');
-                renderSponsoredContent(detailedItems.filter(item => item !== null));
-
-            } catch (error) {
-                console.error('Erro ao carregar conteúdo patrocinado:', error);
-                renderErrorButton('loading-message', loadSponsoredContent);
-            }
-        }
-        
-        function renderSponsoredContent(items) {
-            const containers = {
-                filmes: document.getElementById('filmes-grid'),
-                series: document.getElementById('series-grid'),
-                animes: document.getElementById('animes-grid')
-            };
-
-            const sections = {
-                filmes: document.getElementById('filmes-section'),
-                series: document.getElementById('series-section'),
-                animes: document.getElementById('animes-section')
-            };
-
-            containers.filmes.innerHTML = '';
-            containers.series.innerHTML = '';
-            containers.animes.innerHTML = '';
-
-            items.forEach(item => {
-                sponsoredDataCache.push(item);
-                
-                const card = document.createElement('div');
-                card.className = 'media-card';
-                card.dataset.id = item.id;
-                
-                const posterPath = item.poster_path ? `${TMDB_IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
-                
-                card.innerHTML = `
-                    <img src="${posterPath}" alt="Pôster de ${item.title || item.name}">
-                    <div class="media-card-title">${item.title || item.name}</div>
-                `;
-
-                let typeKey;
-                if (item.media_type_custom === 'movie') {
-                    typeKey = 'filmes';
-                    sections.filmes.classList.remove('hidden');
-                    containers.filmes.appendChild(card);
-                } else { 
-                    const isAnime = item.genres && item.genres.some(genre => genre.id === 16);
-                    if (isAnime) {
-                        typeKey = 'animes';
-                        sections.animes.classList.remove('hidden');
-                        containers.animes.appendChild(card);
-                    } else {
-                        typeKey = 'series';
-                        sections.series.classList.remove('hidden');
-                        containers.series.appendChild(card);
-                    }
-                }
-                card.dataset.type = typeKey;
-
-                card.addEventListener('click', () => showSponsoredDetailsModal(item.id));
-            });
-        }
-
-        function showSponsoredDetailsModal(tmdbId) {
-            const item = sponsoredDataCache.find(data => data.id == tmdbId);
-            if (!item) return;
-
-            const backdrop = item.backdrop_path ? `${BACKDROP_URL}${item.backdrop_path}` : '';
-            const backdropBg = document.querySelector('#details-modal .modal-backdrop-bg');
-            if (backdropBg) {
-                backdropBg.style.backgroundImage = `url('${backdrop}')`;
-            }
-
-            document.getElementById('modal-poster').src = item.poster_path ?
-                `${TMDB_IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
-            document.getElementById('modal-title').textContent = item.title || item.name;
-            document.getElementById('modal-synopsis').textContent = item.overview || 'Sinopse não disponível.';
-            
-            const subtitleEl = document.getElementById('modal-subtitle');
-            const bodySponsorContainer = document.getElementById('modal-sponsor-container-body');
-            
-            if (item.media_type_custom === 'movie') {
-                subtitleEl.innerHTML = item.Patrocinador ? `Patrocinado por <span style="color: #fff; font-weight: 700;">${item.Patrocinador}</span>` : '';
-                bodySponsorContainer.classList.add('hidden');
-            } else {
-                subtitleEl.textContent = '';
-                bodySponsorContainer.classList.remove('hidden');
-                populateInfoTags('modal-sponsor', item.Patrocinador);
-            }
-
-            const metaContainer = document.getElementById('modal-meta');
-            metaContainer.innerHTML = '';
-
-            document.getElementById('modal-info-tv').classList.toggle('hidden', item.media_type_custom === 'movie');
-            document.getElementById('modal-genres-container').classList.toggle('hidden', item.media_type_custom !== 'movie');
-            
-            if (item.media_type_custom === 'movie') {
-                const year = item.release_date ? item.release_date.split('-')[0] : 'N/A';
-                metaContainer.innerHTML = `
-                    <span>Filme</span>
-                    <span>${year}</span>
-                    <span>${formatDuration(item.runtime)}</span>
-                `;
-                const genresContainer = document.getElementById('modal-genres');
-                if (item.genres) {
-                    genresContainer.innerHTML = item.genres.slice(0, 3).map(g => `<span>${g.name}</span>`).join('');
-                }
-            } else {
-                const type = item.genres && item.genres.some(g => g.id === 16) ? 'Anime' : 'Série';
-                const year = item.first_air_date ? item.first_air_date.split('-')[0] : 'N/A';
-                metaContainer.innerHTML = `
-                    <span>${type}</span>
-                    <span>${year}</span>
-                `;
-
-                const totalEpsGroup = document.getElementById('modal-total-eps-group');
-                if (item['Episódios Totais'] && item['Episódios Totais'].toString().trim() !== '') {
-                    populateInfoTags('modal-total-eps', item['Episódios Totais']);
-                    totalEpsGroup.classList.remove('hidden');
-                } else {
-                    totalEpsGroup.classList.add('hidden');
-                }
-                
-                populateInfoTags('modal-sponsored-eps', item['Episódios Patrocinados']);
-                populateInfoTags('modal-watched-eps', item['Episódios Assistidos']);
-            }
-
-            document.getElementById('details-modal').classList.add('visible');
-        }
-
-        // Carrega e processa os dados da planilha e do TMDB para ASSISTIDOS
-        async function loadAssistidosContent() {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-                const response = await fetch(ASSISTIDOS_DATA_URL, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) throw new Error('Falha ao buscar dados do Google Script.');
-                const assistidosItems = await response.json();
-                
-                const detailedItems = await Promise.all(
-                    assistidosItems.map(async (item) => {
-                        const tmdbId = item['ID DO TMDB'];
-                        if (!tmdbId) return null;
-
-                        const isMovie = !item['Episódios Patrocinados'] && !item['Episódios Assistidos '];
-                        const mediaType = isMovie ? 'movie' : 'tv';
-                        
-                        const tmdbUrl = `${TMDB_BASE_URL}/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
-                        
-                        try {
-                            const tmdbResponse = await fetch(tmdbUrl);
-                            if (!tmdbResponse.ok) return null;
-                            const tmdbData = await tmdbResponse.json();
-                            return { ...item, ...tmdbData, media_type_custom: mediaType };
-                        } catch (e) {
-                            return null;
-                        }
-                    })
-                );
-                
-                document.getElementById('assistidos-loading-message').classList.add('hidden');
-                renderAssistidosContent(detailedItems.filter(item => item !== null));
-
-            } catch (error) {
-                console.error('Erro ao carregar conteúdo assistido:', error);
-                renderErrorButton('assistidos-loading-message', loadAssistidosContent);
-            }
-        }
-        
-        function renderAssistidosContent(items) {
-            const containers = {
-                filmes: document.getElementById('assistidos-filmes-grid'),
-                series: document.getElementById('assistidos-series-grid'),
-                animes: document.getElementById('assistidos-animes-grid')
-            };
-
-            const sections = {
-                filmes: document.getElementById('assistidos-filmes-section'),
-                series: document.getElementById('assistidos-series-section'),
-                animes: document.getElementById('assistidos-animes-section')
-            };
-
-            containers.filmes.innerHTML = '';
-            containers.series.innerHTML = '';
-            containers.animes.innerHTML = '';
-
-            items.forEach(item => {
-                assistidosDataCache.push(item);
-                
-                const card = document.createElement('div');
-                card.className = 'media-card';
-                card.dataset.id = item.id;
-                
-                const posterPath = item.poster_path ? `${TMDB_IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
-                
-                card.innerHTML = `
-                    <img src="${posterPath}" alt="Pôster de ${item.Título}">
-                    <div class="media-card-title">${item.Título}</div>
-                `;
-
-                let typeKey;
-                if (item.media_type_custom === 'movie') {
-                    typeKey = 'filmes';
-                    sections.filmes.classList.remove('hidden');
-                    containers.filmes.appendChild(card);
-                } else { 
-                    const isAnime = item.genres && item.genres.some(genre => genre.id === 16);
-                    if (isAnime) {
-                        typeKey = 'animes';
-                        sections.animes.classList.remove('hidden');
-                        containers.animes.appendChild(card);
-                    } else {
-                        typeKey = 'series';
-                        sections.series.classList.remove('hidden');
-                        containers.series.appendChild(card);
-                    }
-                }
-                card.dataset.type = typeKey;
-
-                card.addEventListener('click', () => showAssistidosDetailsModal(item.id));
-            });
-        }
-
-        function showAssistidosDetailsModal(tmdbId) {
-            const item = assistidosDataCache.find(data => data.id == tmdbId);
-            if (!item) return;
-
-            const backdrop = item.backdrop_path ? `${BACKDROP_URL}${item.backdrop_path}` : '';
-            const backdropBg = document.querySelector('#assistidos-details-modal .modal-backdrop-bg');
-            if (backdropBg) {
-                backdropBg.style.backgroundImage = `url('${backdrop}')`;
-            }
-
-            document.getElementById('assistidos-modal-poster').src = item.poster_path ?
-                `${TMDB_IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/200x300?text=Sem+Imagem';
-            document.getElementById('assistidos-modal-title').textContent = item.Título;
-            document.getElementById('assistidos-modal-synopsis').textContent = item.overview || 'Sinopse não disponível.';
-            document.getElementById('assistidos-modal-rating').innerHTML = renderStars(item['Nota da Lorena']);
-            
-            const subtitleEl = document.getElementById('assistidos-modal-subtitle');
-            const bodySponsorContainer = document.getElementById('assistidos-modal-sponsor-container-body');
-            
-            if (item.media_type_custom === 'movie') {
-                subtitleEl.innerHTML = item.Patrocinador ? `Patrocinado por <span style="color: #fff; font-weight: 700;">${item.Patrocinador}</span>` : '';
-                bodySponsorContainer.classList.add('hidden');
-            } else {
-                subtitleEl.textContent = '';
-                bodySponsorContainer.classList.remove('hidden');
-                populateInfoTags('assistidos-modal-sponsor', item.Patrocinador);
-            }
-
-            const metaContainer = document.getElementById('assistidos-modal-meta');
-            metaContainer.innerHTML = '';
-
-            document.getElementById('assistidos-modal-info-tv').classList.toggle('hidden', item.media_type_custom === 'movie');
-            document.getElementById('assistidos-modal-genres-container').classList.toggle('hidden', item.media_type_custom !== 'movie');
-            
-            if (item.media_type_custom === 'movie') {
-                const year = item.release_date ? item.release_date.split('-')[0] : 'N/A';
-                metaContainer.innerHTML = `
-                    <span>Filme</span>
-                    <span>${year}</span>
-                    <span>${formatDuration(item.runtime)}</span>
-                `;
-                const genresContainer = document.getElementById('assistidos-modal-genres');
-                if (item.genres) {
-                    genresContainer.innerHTML = item.genres.slice(0, 3).map(g => `<span>${g.name}</span>`).join('');
-                }
-            } else {
-                const type = item.genres && item.genres.some(g => g.id === 16) ? 'Anime' : 'Série';
-                const year = item.first_air_date ? item.first_air_date.split('-')[0] : 'N/A';
-                metaContainer.innerHTML = `
-                    <span>${type}</span>
-                    <span>${year}</span>
-                `;
-                populateInfoTags('assistidos-modal-sponsored-eps', item['Episódios Patrocinados']);
-                populateInfoTags('assistidos-modal-watched-eps', item['Episódios Assistidos ']);
-            }
-
-            document.getElementById('assistidos-details-modal').classList.add('visible');
         }
 
         // INICIA TUDO
