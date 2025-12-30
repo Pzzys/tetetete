@@ -1,1 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Loryez - Admin</title>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .card { background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333; width: 100%; max-width: 400px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        button { background: #8257e5; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Painel Admin</h2>
+        <input type="password" id="senha" placeholder="Senha Mestra">
+        <hr>
+        <input type="text" id="nome" placeholder="Nome do Filme">
+        <input type="text" id="tmdb_id" placeholder="ID TMDB">
+        <input type="text" id="patrocinador" placeholder="Patrocinador">
+        <select id="tipo">
+            <option value="patrocinado">Patrocinado</option>
+            <option value="assistido">Já Assistido</option>
+        </select>
+        <button onclick="salvar()">Salvar no Banco</button>
+        <p id="msg"></p>
+    </div>
 
+    <script>
+        async function salvar() {
+            const msg = document.getElementById('msg');
+            msg.innerText = "Enviando...";
+            
+            const payload = {
+                nome: document.getElementById('nome').value,
+                tmdb_id: document.getElementById('tmdb_id').value,
+                patrocinador: document.getElementById('patrocinador').value,
+                tipo: document.getElementById('tipo').value
+            };
+
+            const res = await fetch('/api/db', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-admin-senha': document.getElementById('senha').value
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                msg.innerText = "✅ Salvo com sucesso!";
+                document.querySelectorAll('input').forEach(i => i.id !== 'senha' && (i.value = ''));
+            } else {
+                msg.innerText = "❌ Erro: Senha incorreta ou problema no banco.";
+            }
+        }
+    </script>
+</body>
+</html>
