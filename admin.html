@@ -2,50 +2,90 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Loryez - Painel Admin</title>
+    <title>Loryez - Login Admin</title>
     <style>
-        body { background: #050505; color: white; font-family: 'Outfit', sans-serif; display: flex; justify-content: center; padding: 40px; }
-        .box { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 100%; max-width: 450px; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #222; background: #1a1a1a; color: white; }
-        button { background: #9d4edd; border: none; font-weight: bold; cursor: pointer; }
-        h2 { color: #9d4edd; text-align: center; }
+        body { background: #050505; color: white; font-family: 'Outfit', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #111; padding: 30px; border-radius: 16px; border: 1px solid #333; width: 100%; max-width: 400px; text-align: center; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #222; background: #1a1a1a; color: white; box-sizing: border-box; }
+        button { background: #9d4edd; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #7b2cbf; }
+        .hidden { display: none; }
+        #msg { font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Loryez Admin</h2>
+
+    <div id="login-area" class="card">
+        <h2>Área Restrita</h2>
         <input type="text" id="user" placeholder="Usuário">
         <input type="password" id="pass" placeholder="Senha">
-        <hr style="border: 0.5px solid #222; margin: 20px 0;">
+        <button onclick="fazerLogin()">Entrar no Painel</button>
+        <p id="msg-login"></p>
+    </div>
+
+    <div id="panel-area" class="card hidden">
+        <h2 style="color:#9d4edd">Painel de Controle</h2>
         <input type="text" id="nome" placeholder="Nome do Filme/Série">
-        <input type="text" id="tmdb_id" placeholder="ID do TMDB">
-        <input type="text" id="patrocinador" placeholder="Patrocinador">
+        <input type="text" id="tmdb" placeholder="ID do TMDB">
+        <input type="text" id="patro" placeholder="Patrocinador">
         <input type="text" id="eps_p" placeholder="Eps Patrocinados">
         <input type="text" id="eps_a" placeholder="Eps Assistidos">
-        <input type="text" id="nota" placeholder="Nota da Lorena (0-10)">
+        <input type="text" id="nota" placeholder="Nota da Lorena">
         <select id="tipo">
-            <option value="patrocinado">⭐ Aba Patrocinados</option>
-            <option value="assistido">✅ Aba Assistidos</option>
+            <option value="patrocinado">Aba Patrocinados</option>
+            <option value="assistido">Aba Assistidos</option>
         </select>
-        <button onclick="salvar()">Cadastrar no Banco de Dados</button>
-        <p id="msg" style="text-align: center;"></p>
+        <button onclick="salvar()" id="btn-save">Salvar no Banco</button>
+        <button onclick="location.reload()" style="background:#333; font-size: 12px;">Sair</button>
+        <p id="msg-save"></p>
     </div>
 
     <script>
-        async function salvar() {
-            const msg = document.getElementById('msg');
-            msg.innerText = "Processando...";
+        let credenciais = { u: "", p: "" };
+
+        async function fazerLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const msg = document.getElementById('msg-login');
             
+            // Teste rápido para ver se a API responde
+            msg.innerText = "Verificando...";
+            
+            // Usamos a própria API de listagem para ver se as chaves do banco estão ok
+            const res = await fetch('/api/list');
+            if(res.ok) {
+                // Se o banco respondeu, agora validamos as credenciais que você pôs na Vercel
+                // Mas a validação REAL acontece no momento do "save".
+                // Aqui apenas "liberamos" o visual se você preencher algo.
+                if(u && p) {
+                    credenciais.u = u;
+                    credenciais.p = p;
+                    document.getElementById('login-area').classList.add('hidden');
+                    document.getElementById('panel-area').classList.remove('hidden');
+                } else {
+                    msg.innerText = "Preencha usuário e senha.";
+                }
+            } else {
+                msg.innerText = "Erro: Banco de dados não conectado na Vercel.";
+            }
+        }
+
+        async function salvar() {
+            const fb = document.getElementById('msg-save');
+            const btn = document.getElementById('btn-save');
+            fb.innerText = "Enviando para o banco...";
+            btn.disabled = true;
+
             const payload = {
-                user: document.getElementById('user').value,
-                pass: document.getElementById('pass').value,
+                user: credenciais.u,
+                pass: credenciais.p,
                 nome: document.getElementById('nome').value,
-                tmdb_id: document.getElementById('tmdb_id').value,
-                patrocinador: document.getElementById('patrocinador').value,
-                tipo: document.getElementById('tipo').value,
+                tmdb_id: document.getElementById('tmdb').value,
+                patrocinador: document.getElementById('patro').value,
                 eps_p: document.getElementById('eps_p').value,
                 eps_a: document.getElementById('eps_a').value,
-                nota: document.getElementById('nota').value
+                nota: document.getElementById('nota').value,
+                tipo: document.getElementById('tipo').value
             };
 
             const res = await fetch('/api/save', {
@@ -55,12 +95,14 @@
             });
 
             if (res.ok) {
-                msg.style.color = "#4cda64";
-                msg.innerText = "✅ Cadastrado com sucesso!";
+                fb.style.color = "#4cda64";
+                fb.innerText = "✅ Salvo com sucesso no Postgres!";
+                ['nome','tmdb','patro','eps_p','eps_a','nota'].forEach(id => document.getElementById(id).value = '');
             } else {
-                msg.style.color = "#ff5252";
-                msg.innerText = "❌ Erro: Login inválido ou falha no banco.";
+                fb.style.color = "#ff5252";
+                fb.innerText = "❌ Erro: Usuário/Senha incorretos na Vercel.";
             }
+            btn.disabled = false;
         }
     </script>
 </body>
