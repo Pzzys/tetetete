@@ -2,108 +2,1088 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Loryez - Login Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Loryez</title>
+    <link rel="icon" type="image/x-icon" href="https://styles.redditmedia.com/t5_6xhgie/styles/communityIcon_8kgc2fy21dcb1.jpeg?width=128&frame=1&auto=webp&s=2f9049eda6789be694672b93c66064e8007c11bf">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=Comfortaa:wght@700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: white; font-family: 'Outfit', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #111; padding: 30px; border-radius: 16px; border: 1px solid #333; width: 100%; max-width: 400px; text-align: center; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #222; background: #1a1a1a; color: white; box-sizing: border-box; }
-        button { background: #9d4edd; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #7b2cbf; }
-        .hidden { display: none; }
-        #msg { font-size: 14px; margin-top: 10px; }
+        /* --- ESTILOS GLOBAIS --- */
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0f0f13;
+            --bg-tertiary: #181820;
+            --bg-accent: #20202a;
+            --text-primary: #f0f2ff;
+            --text-secondary: #b8bbd6;
+            --text-muted: #8a8da8;
+            --accent-primary: #9d4edd;
+            --accent-secondary: #7b2cbf;
+            --accent-tertiary: #c77dff;
+            --success: #4cda64;
+            --warning: #ffb74d;
+            --error: #ff5252;
+            --info: #448aff;
+            --border-thin: 1px solid rgba(255, 255, 255, 0.07);
+            --border-medium: 1px solid rgba(255, 255, 255, 0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.25);
+            --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 20px rgba(157, 78, 221, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(123, 44, 191, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(157, 78, 221, 0.05) 0%, transparent 50%);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* --- TELA DE LOGIN --- */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .login-box {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            border: var(--border-thin);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .login-box h1 {
+            font-family: 'Jost', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: var(--bg-tertiary);
+            border: var(--border-medium);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.15);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--text-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: 'Jost', sans-serif;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: var(--border-medium);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-accent);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #d32f2f);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        /* --- PAINEL ADMIN --- */
+        .admin-header {
+            background-color: rgba(5, 5, 5, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: var(--border-thin);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-family: 'Jost', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .admin-tab.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--text-primary);
+        }
+
+        .admin-tab:not(.active):hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: var(--border-medium);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* --- CONTEÚDO DO PAINEL --- */
+        .admin-content {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h2 {
+            font-family: 'Jost', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            border-radius: 2px;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: var(--border-thin);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- TABELAS --- */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: var(--border-medium);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: var(--border-thin);
+            color: var(--text-secondary);
+        }
+
+        tr:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* --- FORMULÁRIOS DE EDIÇÃO --- */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 8, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-radius: 20px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            padding: 2rem;
+            position: relative;
+            transform: scale(0.95);
+            transition: all 0.4s ease;
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
+            overflow-y: auto;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-family: 'Jost', sans-serif;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .modal-close:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .login-box {
+                padding: 2rem;
+            }
+            
+            .admin-header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .admin-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .admin-content {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 1.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            th, td {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <div id="login-area" class="card">
-        <h2>Área Restrita</h2>
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="pass" placeholder="Senha">
-        <button onclick="fazerLogin()">Entrar no Painel</button>
-        <p id="msg-login"></p>
+    <!-- Tela de Login -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h1>Painel Admin</h1>
+            <p class="login-subtitle">Loryez - Gerenciamento de Conteúdo</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" class="form-control" placeholder="Digite seu usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" placeholder="Digite sua senha" required>
+                </div>
+                
+                <button type="submit" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                    </svg>
+                    Entrar
+                </button>
+                
+                <div id="login-error" class="error-message hidden"></div>
+            </form>
+        </div>
     </div>
 
-    <div id="panel-area" class="card hidden">
-        <h2 style="color:#9d4edd">Painel de Controle</h2>
-        <input type="text" id="nome" placeholder="Nome do Filme/Série">
-        <input type="text" id="tmdb" placeholder="ID do TMDB">
-        <input type="text" id="patro" placeholder="Patrocinador">
-        <input type="text" id="eps_p" placeholder="Eps Patrocinados">
-        <input type="text" id="eps_a" placeholder="Eps Assistidos">
-        <input type="text" id="nota" placeholder="Nota da Lorena">
-        <select id="tipo">
-            <option value="patrocinado">Aba Patrocinados</option>
-            <option value="assistido">Aba Assistidos</option>
-        </select>
-        <button onclick="salvar()" id="btn-save">Salvar no Banco</button>
-        <button onclick="location.reload()" style="background:#333; font-size: 12px;">Sair</button>
-        <p id="msg-save"></p>
+    <!-- Painel Admin (Oculto inicialmente) -->
+    <div id="admin-panel" class="hidden">
+        <header class="admin-header">
+            <h1>Painel Admin - Loryez</h1>
+            <div class="admin-nav">
+                <button class="admin-tab active" data-tab="patrocinados">Patrocinados</button>
+                <button class="admin-tab" data-tab="assistidos">Assistidos</button>
+            </div>
+            <button id="logout-btn" class="logout-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                    <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                </svg>
+                Sair
+            </button>
+        </header>
+
+        <main class="admin-content">
+            <!-- Seção Patrocinados -->
+            <div id="patrocinados-section" class="section">
+                <div class="card">
+                    <h2>Conteúdos Patrocinados</h2>
+                    <p>Gerencie os filmes, séries e animes patrocinados.</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                        <div></div>
+                        <button id="add-patrocinado" class="btn btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Adicionar Novo
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="patrocinados-table">
+                            <thead>
+                                <tr>
+                                    <th>ID TMDB</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Patrocinador</th>
+                                    <th>Ep. Patrocinados</th>
+                                    <th>Ep. Assistidos</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patrocinados-list">
+                                <!-- Dados serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="patrocinados-empty" class="empty-message hidden">
+                        Nenhum conteúdo patrocinado cadastrado.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção Assistidos -->
+            <div id="assistidos-section" class="section hidden">
+                <div class="card">
+                    <h2>Conteúdos Assistidos</h2>
+                    <p>Gerencie os filmes, séries e animes assistidos.</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                        <div></div>
+                        <button id="add-assistido" class="btn btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Adicionar Novo
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="assistidos-table">
+                            <thead>
+                                <tr>
+                                    <th>ID TMDB</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Patrocinador</th>
+                                    <th>Ep. Patrocinados</th>
+                                    <th>Ep. Assistidos</th>
+                                    <th>Nota Lorena</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assistidos-list">
+                                <!-- Dados serão carregados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="assistidos-empty" class="empty-message hidden">
+                        Nenhum conteúdo assistido cadastrado.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Editar/Adicionar Patrocinado -->
+    <div id="patrocinado-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="patrocinado-modal-title">Adicionar Conteúdo Patrocinado</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="patrocinado-form">
+                <input type="hidden" id="patrocinado-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patrocinado-tmdb-id">ID TMDB *</label>
+                        <input type="number" id="patrocinado-tmdb-id" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patrocinado-titulo">Título *</label>
+                        <input type="text" id="patrocinado-titulo" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patrocinado-tipo">Tipo *</label>
+                        <select id="patrocinado-tipo" class="form-control" required>
+                            <option value="movie">Filme</option>
+                            <option value="series">Série</option>
+                            <option value="anime">Anime</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patrocinado-patrocinador">Patrocinador</label>
+                        <input type="text" id="patrocinado-patrocinador" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patrocinado-ep-patroc">Episódios Patrocinados</label>
+                        <input type="text" id="patrocinado-ep-patroc" class="form-control" placeholder="Ex: 1-3 ou 3 episódios">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="patrocinado-ep-assist">Episódios Assistidos</label>
+                        <input type="text" id="patrocinado-ep-assist" class="form-control" placeholder="Ex: 1-3 ou 3 episódios">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="patrocinado-ep-totais">Episódios Totais</label>
+                        <input type="text" id="patrocinado-ep-totais" class="form-control" placeholder="Ex: 12 episódios">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                    <button type="submit" class="btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Editar/Adicionar Assistido -->
+    <div id="assistido-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="assistido-modal-title">Adicionar Conteúdo Assistido</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <form id="assistido-form">
+                <input type="hidden" id="assistido-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistido-tmdb-id">ID TMDB *</label>
+                        <input type="number" id="assistido-tmdb-id" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assistido-titulo">Título *</label>
+                        <input type="text" id="assistido-titulo" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistido-tipo">Tipo *</label>
+                        <select id="assistido-tipo" class="form-control" required>
+                            <option value="movie">Filme</option>
+                            <option value="series">Série</option>
+                            <option value="anime">Anime</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assistido-patrocinador">Patrocinador</label>
+                        <input type="text" id="assistido-patrocinador" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistido-ep-patroc">Episódios Patrocinados</label>
+                        <input type="text" id="assistido-ep-patroc" class="form-control" placeholder="Ex: 1-3 ou 3 episódios">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assistido-ep-assist">Episódios Assistidos</label>
+                        <input type="text" id="assistido-ep-assist" class="form-control" placeholder="Ex: 1-3 ou 3 episódios">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assistido-nota">Nota da Lorena</label>
+                        <input type="number" id="assistido-nota" class="form-control" min="0" max="5" step="0.5" placeholder="0-5">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                    <button type="submit" class="btn">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        let credenciais = { u: "", p: "" };
+        // Credenciais de login (pode alterar aqui)
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
 
-        async function fazerLogin() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            const msg = document.getElementById('msg-login');
-            
-            // Teste rápido para ver se a API responde
-            msg.innerText = "Verificando...";
-            
-            // Usamos a própria API de listagem para ver se as chaves do banco estão ok
-            const res = await fetch('/api/list');
-            if(res.ok) {
-                // Se o banco respondeu, agora validamos as credenciais que você pôs na Vercel
-                // Mas a validação REAL acontece no momento do "save".
-                // Aqui apenas "liberamos" o visual se você preencher algo.
-                if(u && p) {
-                    credenciais.u = u;
-                    credenciais.p = p;
-                    document.getElementById('login-area').classList.add('hidden');
-                    document.getElementById('panel-area').classList.remove('hidden');
-                } else {
-                    msg.innerText = "Preencha usuário e senha.";
-                }
+        // Chaves para localStorage
+        const STORAGE_KEYS = {
+            PATROCINADOS: 'loryez_patrocinados',
+            ASSISTIDOS: 'loryez_assistidos',
+            AUTH: 'loryez_admin_auth'
+        };
+
+        // Estado do aplicativo
+        let state = {
+            isAuthenticated: false,
+            currentTab: 'patrocinados',
+            patrocinados: [],
+            assistidos: [],
+            editingItem: null
+        };
+
+        // Elementos do DOM
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => document.querySelectorAll(selector);
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadData();
+            setupEventListeners();
+        });
+
+        // Verificar autenticação
+        function checkAuth() {
+            const auth = localStorage.getItem(STORAGE_KEYS.AUTH);
+            if (auth === 'true') {
+                state.isAuthenticated = true;
+                showAdminPanel();
             } else {
-                msg.innerText = "Erro: Banco de dados não conectado na Vercel.";
+                showLoginScreen();
             }
         }
 
-        async function salvar() {
-            const fb = document.getElementById('msg-save');
-            const btn = document.getElementById('btn-save');
-            fb.innerText = "Enviando para o banco...";
-            btn.disabled = true;
+        // Login
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = $('#username').value;
+            const password = $('#password').value;
+            const errorElement = $('#login-error');
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                localStorage.setItem(STORAGE_KEYS.AUTH, 'true');
+                state.isAuthenticated = true;
+                showAdminPanel();
+                errorElement.classList.add('hidden');
+            } else {
+                errorElement.textContent = 'Usuário ou senha incorretos';
+                errorElement.classList.remove('hidden');
+            }
+        }
 
-            const payload = {
-                user: credenciais.u,
-                pass: credenciais.p,
-                nome: document.getElementById('nome').value,
-                tmdb_id: document.getElementById('tmdb').value,
-                patrocinador: document.getElementById('patro').value,
-                eps_p: document.getElementById('eps_p').value,
-                eps_a: document.getElementById('eps_a').value,
-                nota: document.getElementById('nota').value,
-                tipo: document.getElementById('tipo').value
-            };
+        // Logout
+        function handleLogout() {
+            localStorage.removeItem(STORAGE_KEYS.AUTH);
+            state.isAuthenticated = false;
+            showLoginScreen();
+        }
 
-            const res = await fetch('/api/save', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+        // Mostrar tela de login
+        function showLoginScreen() {
+            $('#login-screen').classList.remove('hidden');
+            $('#admin-panel').classList.add('hidden');
+            $('#username').value = '';
+            $('#password').value = '';
+            $('#login-error').classList.add('hidden');
+        }
+
+        // Mostrar painel admin
+        function showAdminPanel() {
+            $('#login-screen').classList.add('hidden');
+            $('#admin-panel').classList.remove('hidden');
+            switchTab('patrocinados');
+        }
+
+        // Carregar dados
+        function loadData() {
+            const patrocinadosData = localStorage.getItem(STORAGE_KEYS.PATROCINADOS);
+            const assistidosData = localStorage.getItem(STORAGE_KEYS.ASSISTIDOS);
+            
+            state.patrocinados = patrocinadosData ? JSON.parse(patrocinadosData) : [];
+            state.assistidos = assistidosData ? JSON.parse(assistidosData) : [];
+            
+            renderPatrocinados();
+            renderAssistidos();
+        }
+
+        // Salvar dados
+        function saveData() {
+            localStorage.setItem(STORAGE_KEYS.PATROCINADOS, JSON.stringify(state.patrocinados));
+            localStorage.setItem(STORAGE_KEYS.ASSISTIDOS, JSON.stringify(state.assistidos));
+        }
+
+        // Trocar aba
+        function switchTab(tabName) {
+            state.currentTab = tabName;
+            
+            $$('.admin-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
             });
-
-            if (res.ok) {
-                fb.style.color = "#4cda64";
-                fb.innerText = "✅ Salvo com sucesso no Postgres!";
-                ['nome','tmdb','patro','eps_p','eps_a','nota'].forEach(id => document.getElementById(id).value = '');
-            } else {
-                fb.style.color = "#ff5252";
-                fb.innerText = "❌ Erro: Usuário/Senha incorretos na Vercel.";
-            }
-            btn.disabled = false;
+            
+            $('#patrocinados-section').classList.toggle('hidden', tabName !== 'patrocinados');
+            $('#assistidos-section').classList.toggle('hidden', tabName !== 'assistidos');
         }
+
+        // Renderizar lista de patrocinados
+        function renderPatrocinados() {
+            const list = $('#patrocinados-list');
+            const empty = $('#patrocinados-empty');
+            
+            if (state.patrocinados.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            list.innerHTML = state.patrocinados.map((item, index) => `
+                <tr>
+                    <td>${item.tmdbId}</td>
+                    <td>${item.titulo}</td>
+                    <td>${getTipoLabel(item.tipo)}</td>
+                    <td>${item.patrocinador || '-'}</td>
+                    <td>${item.epPatrocinados || '-'}</td>
+                    <td>${item.epAssistidos || '-'}</td>
+                    <td class="actions">
+                        <button class="btn btn-sm" onclick="editPatrocinado(${index})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePatrocinado(${index})">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Renderizar lista de assistidos
+        function renderAssistidos() {
+            const list = $('#assistidos-list');
+            const empty = $('#assistidos-empty');
+            
+            if (state.assistidos.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+            list.innerHTML = state.assistidos.map((item, index) => `
+                <tr>
+                    <td>${item.tmdbId}</td>
+                    <td>${item.titulo}</td>
+                    <td>${getTipoLabel(item.tipo)}</td>
+                    <td>${item.patrocinador || '-'}</td>
+                    <td>${item.epPatrocinados || '-'}</td>
+                    <td>${item.epAssistidos || '-'}</td>
+                    <td>${item.nota || '-'}</td>
+                    <td class="actions">
+                        <button class="btn btn-sm" onclick="editAssistido(${index})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAssistido(${index})">Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Obter label do tipo
+        function getTipoLabel(tipo) {
+            const tipos = {
+                'movie': 'Filme',
+                'series': 'Série',
+                'anime': 'Anime'
+            };
+            return tipos[tipo] || tipo;
+        }
+
+        // Adicionar/editar patrocinado
+        function addPatrocinado() {
+            state.editingItem = null;
+            $('#patrocinado-modal-title').textContent = 'Adicionar Conteúdo Patrocinado';
+            $('#patrocinado-form').reset();
+            $('#patrocinado-id').value = '';
+            $('#patrocinado-modal').classList.add('visible');
+        }
+
+        function editPatrocinado(index) {
+            const item = state.patrocinados[index];
+            state.editingItem = { index, item };
+            
+            $('#patrocinado-modal-title').textContent = 'Editar Conteúdo Patrocinado';
+            $('#patrocinado-id').value = index;
+            $('#patrocinado-tmdb-id').value = item.tmdbId;
+            $('#patrocinado-titulo').value = item.titulo;
+            $('#patrocinado-tipo').value = item.tipo;
+            $('#patrocinado-patrocinador').value = item.patrocinador || '';
+            $('#patrocinado-ep-patroc').value = item.epPatrocinados || '';
+            $('#patrocinado-ep-assist').value = item.epAssistidos || '';
+            $('#patrocinado-ep-totais').value = item.epTotais || '';
+            
+            $('#patrocinado-modal').classList.add('visible');
+        }
+
+        function savePatrocinado(e) {
+            e.preventDefault();
+            
+            const id = $('#patrocinado-id').value;
+            const item = {
+                tmdbId: parseInt($('#patrocinado-tmdb-id').value),
+                titulo: $('#patrocinado-titulo').value,
+                tipo: $('#patrocinado-tipo').value,
+                patrocinador: $('#patrocinado-patrocinador').value || null,
+                epPatrocinados: $('#patrocinado-ep-patroc').value || null,
+                epAssistidos: $('#patrocinado-ep-assist').value || null,
+                epTotais: $('#patrocinado-ep-totais').value || null
+            };
+            
+            if (id === '') {
+                // Novo item
+                state.patrocinados.push(item);
+            } else {
+                // Editar item existente
+                state.patrocinados[parseInt(id)] = item;
+            }
+            
+            saveData();
+            renderPatrocinados();
+            closeModal($('#patrocinado-modal'));
+        }
+
+        function deletePatrocinado(index) {
+            if (confirm('Tem certeza que deseja excluir este item?')) {
+                state.patrocinados.splice(index, 1);
+                saveData();
+                renderPatrocinados();
+            }
+        }
+
+        // Adicionar/editar assistido
+        function addAssistido() {
+            state.editingItem = null;
+            $('#assistido-modal-title').textContent = 'Adicionar Conteúdo Assistido';
+            $('#assistido-form').reset();
+            $('#assistido-id').value = '';
+            $('#assistido-modal').classList.add('visible');
+        }
+
+        function editAssistido(index) {
+            const item = state.assistidos[index];
+            state.editingItem = { index, item };
+            
+            $('#assistido-modal-title').textContent = 'Editar Conteúdo Assistido';
+            $('#assistido-id').value = index;
+            $('#assistido-tmdb-id').value = item.tmdbId;
+            $('#assistido-titulo').value = item.titulo;
+            $('#assistido-tipo').value = item.tipo;
+            $('#assistido-patrocinador').value = item.patrocinador || '';
+            $('#assistido-ep-patroc').value = item.epPatrocinados || '';
+            $('#assistido-ep-assist').value = item.epAssistidos || '';
+            $('#assistido-nota').value = item.nota || '';
+            
+            $('#assistido-modal').classList.add('visible');
+        }
+
+        function saveAssistido(e) {
+            e.preventDefault();
+            
+            const id = $('#assistido-id').value;
+            const item = {
+                tmdbId: parseInt($('#assistido-tmdb-id').value),
+                titulo: $('#assistido-titulo').value,
+                tipo: $('#assistido-tipo').value,
+                patrocinador: $('#assistido-patrocinador').value || null,
+                epPatrocinados: $('#assistido-ep-patroc').value || null,
+                epAssistidos: $('#assistido-ep-assist').value || null,
+                nota: $('#assistido-nota').value || null
+            };
+            
+            if (id === '') {
+                // Novo item
+                state.assistidos.push(item);
+            } else {
+                // Editar item existente
+                state.assistidos[parseInt(id)] = item;
+            }
+            
+            saveData();
+            renderAssistidos();
+            closeModal($('#assistido-modal'));
+        }
+
+        function deleteAssistido(index) {
+            if (confirm('Tem certeza que deseja excluir este item?')) {
+                state.assistidos.splice(index, 1);
+                saveData();
+                renderAssistidos();
+            }
+        }
+
+        // Fechar modal
+        function closeModal(modal) {
+            modal.classList.remove('visible');
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Login
+            $('#login-form').addEventListener('submit', handleLogin);
+            
+            // Logout
+            $('#logout-btn').addEventListener('click', handleLogout);
+            
+            // Tabs
+            $$('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+            
+            // Botões de adicionar
+            $('#add-patrocinado').addEventListener('click', addPatrocinado);
+            $('#add-assistido').addEventListener('click', addAssistido);
+            
+            // Formulários
+            $('#patrocinado-form').addEventListener('submit', savePatrocinado);
+            $('#assistido-form').addEventListener('submit', saveAssistido);
+            
+            // Fechar modais
+            $$('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal-overlay');
+                    closeModal(modal);
+                });
+            });
+            
+            // Fechar modal ao clicar fora
+            $$('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal);
+                    }
+                });
+            });
+        }
+
+        // Exportar funções para uso nos onclick
+        window.editPatrocinado = editPatrocinado;
+        window.deletePatrocinado = deletePatrocinado;
+        window.editAssistido = editAssistido;
+        window.deleteAssistido = deleteAssistido;
     </script>
 </body>
 </html>
