@@ -1,6 +1,5 @@
 {
-  "name": "loryez-vercel",
   "dependencies": {
-    "@vercel/postgres": "^0.10.0"
+    "@vercel/postgres": "latest"
   }
 }
